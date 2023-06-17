@@ -1,7 +1,6 @@
 package io.github.mooy1.infinitylib.core;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 
 import javax.annotation.Nullable;
 
@@ -27,12 +26,8 @@ public class MockAddon extends AbstractAddon {
         this.test = test;
         MockBukkit.load(Slimefun.class);
         this.SFAInstance = new SlimefunAddonInstance("Mooy1", "InfinityLib");
-        try {
-            SFAInstance.createAndStartUpdater(test == MockAddonTest.BAD_GITHUB_PATH ? "[!#$" : "master",
-                    test == MockAddonTest.MISSING_KEY ? "missing" : "auto-update");
-        }
-        catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ignored) {
-        }
+        SFAInstance.createAndStartUpdater(test == MockAddonTest.BAD_GITHUB_PATH ? "[!#$" : "master",
+                test == MockAddonTest.MISSING_KEY ? "missing" : "auto-update");
     }
 
     @Override
