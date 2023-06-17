@@ -66,8 +66,7 @@ public class SlimefunAddonInstance implements SlimefunAddon {
         slimefunTickCount = tick;
     }
 
-    public void createAndStartUpdater(String autoUpdateBranch, String autoUpdateKey)
-            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void createAndStartUpdater(String autoUpdateBranch, String autoUpdateKey) {
         boolean official = AbstractAddon.instance().getDescription().getVersion().matches("DEV - \\d+ \\(git \\w+\\)");
         boolean brokenConfig = AbstractAddon.instance().isBrokenConfig();
 
@@ -90,21 +89,32 @@ public class SlimefunAddonInstance implements SlimefunAddon {
             AbstractAddon.instance().handle(new IllegalStateException("Auto update key missing from the default config!"));
         }
 
-        Method getFileMethod = JavaPlugin.class.getDeclaredMethod("getFile");
-        getFileMethod.setAccessible(true);
-        File file = (File) getFileMethod.invoke(AbstractAddon.instance());
+        File file = null;
 
-        GitHubBuildsUpdater updater = official ? new GitHubBuildsUpdater(AbstractAddon.instance(), file,
-                githubUserName + "/" + githubRepo + "/" + autoUpdateBranch) : null;
+        try {
+            Method getFileMethod = JavaPlugin.class.getDeclaredMethod("getFile");
+            getFileMethod.setAccessible(true);
+            file = (File) getFileMethod.invoke(AbstractAddon.instance());
+        }
+        catch (NoSuchMethodException e) {
+            AbstractAddon.instance().handle(new IllegalStateException("Can't find getFile method in plugin main class"));
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
+            AbstractAddon.instance().handle(new IllegalStateException("Unable to access getFile method of plugin main class"));
+        }
+        finally {
+            GitHubBuildsUpdater updater = official ? new GitHubBuildsUpdater(AbstractAddon.instance(), file,
+                    githubUserName + "/" + githubRepo + "/" + autoUpdateBranch) : null;
 
-        // Auto update if enabled
-        if (updater != null) {
-            if (brokenConfig) {
-                updater.start();
-            }
-            else if (AbstractAddon.config().getBoolean(autoUpdateKey)) {
-                autoUpdatesEnabled = true;
-                updater.start();
+            // Auto update if enabled
+            if (updater != null) {
+                if (brokenConfig) {
+                    updater.start();
+                }
+                else if (AbstractAddon.config().getBoolean(autoUpdateKey)) {
+                    autoUpdatesEnabled = true;
+                    updater.start();
+                }
             }
         }
     }
