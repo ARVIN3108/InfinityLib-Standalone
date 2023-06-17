@@ -90,7 +90,7 @@ public class SlimefunAddonInstance implements SlimefunAddon {
             AbstractAddon.instance().handle(new IllegalStateException("Auto update key missing from the default config!"));
         }
 
-        Method getFileMethod = AbstractAddon.instance().getClass().getDeclaredMethod("getFile", null);
+        Method getFileMethod = AbstractAddon.instance().getClass().getDeclaredMethod("getFile");
         getFileMethod.setAccessible(true);
         File file = (File) getFileMethod.invoke(AbstractAddon.instance());
 
