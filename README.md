@@ -1,7 +1,15 @@
-# InfinityLib
+# InfinityLib (Standalone Edition)
+
 A shaded library for Slimefun addons which adds a bunch of useful classes and utilities.
 
-[![Release](https://jitpack.io/v/Mooy1/InfinityLib.svg)](https://jitpack.io/#Mooy1/InfinityLib)
+[![Release](https://jitpack.io/v/ARVIN3108/InfinityLib-Standalone.svg)](https://jitpack.io/#Mooy1/InfinityLib)
+
+# What's the difference with the original version?
+Actually, there is <b>almost no difference</b>. However, the implementation of the <b>SlimefunAddon</b> class is separated from
+the <b>AbstractAddon</b> class. This will be very useful for plugins that want to use <b>[InfinityLib](https://github.com/Mooy1/InfinityLib)
+without having to call the Slimefun API class</b>. This way, we can place Slimefun in
+a [soft-depend](https://docs.papermc.io/paper/dev/plugin-yml#softdepend) position in the Bukkit configuration file
+[plugin.yml](https://docs.papermc.io/paper/dev/plugin-yml).
 
 # Packages & Features
 ## Core
@@ -51,14 +59,13 @@ It also adds some default commands such as an addon info, aliases, and help comm
 
 # How to use
 
-First you need to add InfinityLib to the `dependencies` section in your `pom.xml`:
+First you need to add InfinityLib (Standalone Edition) to the `dependencies` section in your `pom.xml`:
 
 ```xml
 <dependency>
-    <groupId>io.github.mooy1</groupId>
-    <artifactId>InfinityLib</artifactId>
+    <groupId>com.github.ARVIN3108</groupId>
+    <artifactId>InfinityLib-Standalone</artifactId>
     <version>SPECIFY VERSION HERE</version>
-    <scope>compile</scope>
 </dependency>
 ```
 
@@ -81,6 +88,8 @@ Under the `build` section in your `pom.xml`, you should have the following:
                     <pattern>io.github.mooy1.infinitylib</pattern>
                     <shadedPattern>YOUR.MAIN.PACKAGE.HERE.infinitylib</shadedPattern>
                 </relocation>
+                <relocation>id.arvin3108.standalone</relocation>
+                <shadedPattern>YOUR.MAIN.PACKAGE.HERE.standalone</shadedPattern>
             </relocations>
             <filters>
                 <filter>
