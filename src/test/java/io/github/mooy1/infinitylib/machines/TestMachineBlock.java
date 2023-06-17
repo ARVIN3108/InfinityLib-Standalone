@@ -55,15 +55,15 @@ class TestMachineBlock {
     @Test
     @Order(0)
     void testRegister() {
-        assertThrows(IllegalStateException.class, () -> machine.register(addon));
+        assertThrows(IllegalStateException.class, () -> machine.register(addon.getSFAInstance()));
 
         machine.ticksPerOutput(2);
 
-        assertThrows(IllegalStateException.class, () -> machine.register(addon));
+        assertThrows(IllegalStateException.class, () -> machine.register(addon.getSFAInstance()));
 
         machine.energyPerTick(10);
 
-        assertDoesNotThrow(() -> machine.register(addon));
+        assertDoesNotThrow(() -> machine.register(addon.getSFAInstance()));
         assertEquals(20, machine.energyCapacity);
         assertSame(MachineLayout.MACHINE_DEFAULT, machine.layout);
     }

@@ -54,7 +54,7 @@ class TestGroups {
         PlayerProfile.get(p, profile::complete);
 
         new MenuListener(Objects.requireNonNull(Slimefun.instance()));
-        multi.register(addon);
+        multi.register(addon.getSFAInstance());
         multi.open(p, profile.get(), SlimefunGuideMode.SURVIVAL_MODE);
 
         assertTrue(sub.isRegistered());

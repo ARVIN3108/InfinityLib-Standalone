@@ -16,33 +16,24 @@ import org.bukkit.plugin.java.JavaPluginLoader;
 
 import io.github.mooy1.infinitylib.InfinityLib;
 import io.github.mooy1.infinitylib.commands.AddonCommand;
-import io.github.mooy1.infinitylib.common.Scheduler;
-import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
-import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
-import io.github.thebusybiscuit.slimefun4.libraries.dough.updater.GitHubBuildsUpdater;
 
 /**
  * Extend this in your main plugin class to access a bunch of utilities
+ * <br><br> Standalone version of InfinityLib
  *
  * @author Mooy1
+ * @author ARVIN3108
  */
 @ParametersAreNonnullByDefault
-public abstract class AbstractAddon extends JavaPlugin implements SlimefunAddon {
+public abstract class AbstractAddon extends JavaPlugin {
 
     private static AbstractAddon instance;
 
-    private final GitHubBuildsUpdater updater;
     private final Environment environment;
-    private final String githubUserName;
-    private final String githubRepo;
-    private final String autoUpdateBranch;
-    private final String autoUpdateKey;
-    private final String bugTrackerURL;
 
     private AddonCommand command;
     private AddonConfig config;
-    private int slimefunTickCount;
-    private boolean autoUpdatesEnabled;
+    private boolean brokenConfig;
     private boolean disabling;
     private boolean enabling;
     private boolean loading;
@@ -50,41 +41,25 @@ public abstract class AbstractAddon extends JavaPlugin implements SlimefunAddon 
     /**
      * Live Addon Constructor
      */
-    public AbstractAddon(String githubUserName, String githubRepo, String autoUpdateBranch, String autoUpdateKey) {
-        boolean official = getDescription().getVersion().matches("DEV - \\d+ \\(git \\w+\\)");
-        this.updater = official ? new GitHubBuildsUpdater(this, getFile(),
-                githubUserName + "/" + githubRepo + "/" + autoUpdateBranch) : null;
+    public AbstractAddon() {
         this.environment = Environment.LIVE;
-        this.githubUserName = githubUserName;
-        this.autoUpdateBranch = autoUpdateBranch;
-        this.githubRepo = githubRepo;
-        this.autoUpdateKey = autoUpdateKey;
-        this.bugTrackerURL = "https://github.com/" + githubUserName + "/" + githubRepo + "/issues";
         validate();
     }
 
     /**
      * Addon Testing Constructor
      */
-    public AbstractAddon(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file,
-                            String githubUserName, String githubRepo, String autoUpdateBranch, String autoUpdateKey) {
-        this(loader, description, dataFolder, file, githubUserName, githubRepo, autoUpdateBranch, autoUpdateKey, Environment.TESTING);
+    public AbstractAddon(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
+        this(loader, description, dataFolder, file, Environment.TESTING);
     }
 
     /**
      * Library Testing Constructor
      */
-    AbstractAddon(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file,
-                  String githubUserName, String githubRepo, String autoUpdateBranch, String autoUpdateKey,
-                  Environment environment) {
+    AbstractAddon(JavaPluginLoader loader, PluginDescriptionFile description,
+                  File dataFolder, File file, Environment environment) {
         super(loader, description, dataFolder, file);
-        this.updater = null;
         this.environment = environment;
-        this.githubUserName = githubUserName;
-        this.autoUpdateBranch = autoUpdateBranch;
-        this.githubRepo = githubRepo;
-        this.autoUpdateKey = autoUpdateKey;
-        this.bugTrackerURL = "https://github.com/" + githubUserName + "/" + githubRepo + "/issues";
         validate();
     }
 
@@ -100,15 +75,6 @@ public abstract class AbstractAddon extends JavaPlugin implements SlimefunAddon 
         }
         if (instance != null) {
             throw new IllegalStateException("Addon " + instance.getName() + " is already using this InfinityLib, Shade an relocate your own!");
-        }
-        if (!githubUserName.matches("[\\w-]+")) {
-            throw new IllegalArgumentException("Invalid githubUserName");
-        }
-        if (!githubRepo.matches("[\\w-]+")) {
-            throw new IllegalArgumentException("Invalid githubRepo");
-        }
-        if (!autoUpdateBranch.matches("[\\w-]+")) {
-            throw new IllegalArgumentException("Invalid autoUpdateBranch");
         }
     }
 
@@ -144,7 +110,7 @@ public abstract class AbstractAddon extends JavaPlugin implements SlimefunAddon 
         instance = this;
 
         // This is used to mark when the config is broken, so we should always auto update
-        boolean brokenConfig = false;
+        brokenConfig = false;
 
         // Create Config
         try {
@@ -155,39 +121,11 @@ public abstract class AbstractAddon extends JavaPlugin implements SlimefunAddon 
             e.printStackTrace();
         }
 
-        // Validate autoUpdateKey
-        if (autoUpdateKey == null) {
-            brokenConfig = true;
-            handle(new IllegalStateException("Null auto update key"));
-        }
-        else if (autoUpdateKey.isEmpty()) {
-            brokenConfig = true;
-            handle(new IllegalStateException("Empty auto update key!"));
-        }
-        else if (!brokenConfig && !config.getDefaults().contains(autoUpdateKey, true)) {
-            brokenConfig = true;
-            handle(new IllegalStateException("Auto update key missing from the default config!"));
-        }
-
-        // Auto update if enabled
-        if (updater != null) {
-            if (brokenConfig) {
-                updater.start();
-            }
-            else if (config.getBoolean(autoUpdateKey)) {
-                autoUpdatesEnabled = true;
-                updater.start();
-            }
-        }
-
         // Get plugin command
         PluginCommand pluginCommand = getCommand(getName());
         if (pluginCommand != null) {
             command = new AddonCommand(pluginCommand);
         }
-
-        // Create total tick count
-        Scheduler.repeat(Slimefun.getTickerTask().getTickRate(), () -> slimefunTickCount++);
 
         // Call addon enable
         try {
@@ -218,7 +156,6 @@ public abstract class AbstractAddon extends JavaPlugin implements SlimefunAddon 
         finally {
             disabling = false;
             instance = null;
-            slimefunTickCount = 0;
             command = null;
             config = null;
         }
@@ -227,7 +164,7 @@ public abstract class AbstractAddon extends JavaPlugin implements SlimefunAddon 
     /**
      * Throws an exception if in a test environment, otherwise just logs the stacktrace so that the plugin functions
      */
-    private void handle(RuntimeException e) {
+    public void handle(RuntimeException e) {
         switch (this.environment) {
             case TESTING:
                 throw e;
@@ -259,25 +196,6 @@ public abstract class AbstractAddon extends JavaPlugin implements SlimefunAddon 
     @Nonnull
     protected final AddonCommand getAddonCommand() {
         return Objects.requireNonNull(instance().command, "Command '" + getName() + "' missing from plugin.yml!");
-    }
-
-    /**
-     * Returns whether auto updates are enabled, for use in metrics
-     */
-    protected final boolean autoUpdatesEnabled() {
-        return instance().autoUpdatesEnabled;
-    }
-
-    @Nonnull
-    @Override
-    public final JavaPlugin getJavaPlugin() {
-        return this;
-    }
-
-    @Nonnull
-    @Override
-    public final String getBugTrackerURL() {
-        return bugTrackerURL;
     }
 
     @Nonnull
@@ -321,13 +239,6 @@ public abstract class AbstractAddon extends JavaPlugin implements SlimefunAddon 
     }
 
     /**
-     * Returns the total number of Slimefun ticks that have occurred
-     */
-    public static int slimefunTickCount() {
-        return instance().slimefunTickCount;
-    }
-
-    /**
      * Returns the current running environment
      */
     @Nonnull
@@ -341,6 +252,20 @@ public abstract class AbstractAddon extends JavaPlugin implements SlimefunAddon 
     @Nonnull
     public static NamespacedKey createKey(String s) {
         return new NamespacedKey(instance(), s);
+    }
+
+    /**
+     * Returns whether the configuration is corrupted or not
+     */
+    public boolean isBrokenConfig() {
+        return brokenConfig;
+    }
+
+    /**
+     * Sets the configuration is corrupted or not
+     */
+    public void setBrokenConfig(boolean brokenConfig) {
+        this.brokenConfig = brokenConfig;
     }
 
 }

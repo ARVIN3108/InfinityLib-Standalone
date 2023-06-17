@@ -1,6 +1,7 @@
 package io.github.mooy1.infinitylib.core;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.annotation.Nullable;
 
@@ -8,11 +9,13 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPluginLoader;
 
 import be.seeseemelk.mockbukkit.MockBukkit;
+import id.arvin3108.standalone.SlimefunAddonInstance;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 
 public class MockAddon extends AbstractAddon {
 
     private final MockAddonTest test;
+    private final SlimefunAddonInstance SFAInstance;
 
     public MockAddon(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
         this(loader, description, dataFolder, file, Environment.LIBRARY_TESTING, null);
@@ -20,11 +23,16 @@ public class MockAddon extends AbstractAddon {
 
     public MockAddon(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file,
                      Environment environment, @Nullable MockAddonTest test) {
-        super(loader, description, dataFolder, file, "Mooy1", "InfinityLib",
-                test == MockAddonTest.BAD_GITHUB_PATH ? "[!#$" : "master",
-                test == MockAddonTest.MISSING_KEY ? "missing" : "auto-update", environment);
+        super(loader, description, dataFolder, file, environment);
         this.test = test;
         MockBukkit.load(Slimefun.class);
+        this.SFAInstance = new SlimefunAddonInstance("Mooy1", "InfinityLib");
+        try {
+            SFAInstance.createAndStartUpdater(test == MockAddonTest.BAD_GITHUB_PATH ? "[!#$" : "master",
+                    test == MockAddonTest.MISSING_KEY ? "missing" : "auto-update");
+        }
+        catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ignored) {
+        }
     }
 
     @Override
@@ -55,6 +63,10 @@ public class MockAddon extends AbstractAddon {
         else if (test == MockAddonTest.CALL_SUPER) {
             super.onDisable();
         }
+    }
+
+    public SlimefunAddonInstance getSFAInstance() {
+        return SFAInstance;
     }
 
 }

@@ -47,18 +47,18 @@ class TestAbstractAddon {
 
     @Test
     void testAutoUpdatedDisabled() {
-        assertFalse(addon.autoUpdatesEnabled());
+        assertFalse(addon.getSFAInstance().autoUpdatesEnabled());
     }
 
     @Test
     void testBugTrackerURL() {
-        assertEquals("https://github.com/Mooy1/InfinityLib/issues", addon.getBugTrackerURL());
+        assertEquals("https://github.com/Mooy1/InfinityLib/issues", addon.getSFAInstance().getBugTrackerURL());
     }
 
     @Test
     void testGlobalTick() {
         server.getScheduler().performOneTick();
-        assertEquals(1, MockAddon.slimefunTickCount());
+        assertEquals(1, addon.getSFAInstance().slimefunTickCount());
     }
 
     @Test

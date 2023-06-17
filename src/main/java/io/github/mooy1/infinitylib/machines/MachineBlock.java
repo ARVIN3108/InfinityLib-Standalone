@@ -14,8 +14,8 @@ import lombok.Setter;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
+import id.arvin3108.standalone.SlimefunAddonInstance;
 import io.github.mooy1.infinitylib.common.StackUtils;
-import io.github.mooy1.infinitylib.core.AbstractAddon;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
@@ -88,7 +88,7 @@ public final class MachineBlock extends AbstractMachineBlock {
 
     @Override
     protected boolean process(Block b, BlockMenu menu) {
-        if (AbstractAddon.slimefunTickCount() % ticksPerOutput != 0) {
+        if (SlimefunAddonInstance.slimefunTickCount() % ticksPerOutput != 0) {
             return true;
         }
 

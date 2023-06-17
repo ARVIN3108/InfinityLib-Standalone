@@ -52,7 +52,7 @@ class TestCraftingBlock {
     @Test
     @Order(0)
     void testRegister() {
-        machine.register(addon);
+        machine.register(addon.getSFAInstance());
         assertSame(MachineLayout.CRAFTING_DEFAULT, machine.layout);
     }
 
