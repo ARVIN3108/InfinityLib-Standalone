@@ -12,9 +12,11 @@ import lombok.Getter;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import io.github.mooy1.infinitylib.common.Scheduler;
 import io.github.mooy1.infinitylib.core.AbstractAddon;
 import io.github.mooy1.infinitylib.core.Environment;
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
+import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.updater.GitHubBuildsUpdater;
 
 public class SlimefunAddonInstance implements SlimefunAddon {
@@ -46,6 +48,9 @@ public class SlimefunAddonInstance implements SlimefunAddon {
         }
 
         this.bugTrackerURL = "https://github.com/" + githubUserName + "/" + githubRepo + "/issues";
+
+        // Create total tick count
+        Scheduler.repeat(Slimefun.getTickerTask().getTickRate(), () -> slimefunTickCount++);
 
         instance = this;
     }
