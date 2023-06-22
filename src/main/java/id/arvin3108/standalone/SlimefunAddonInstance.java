@@ -35,6 +35,10 @@ public class SlimefunAddonInstance implements SlimefunAddon {
     private boolean autoUpdatesEnabled;
 
     public SlimefunAddonInstance(String githubUserName, String githubRepo) {
+        if (instance != null) {
+            throw new IllegalStateException("SlimefunAddonInstance is already initialized!");
+        }
+
         this.githubUserName = githubUserName;
         this.githubRepo = githubRepo;
 
